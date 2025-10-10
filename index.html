@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion - FiscControl</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #4361ee;
+      --primary-light: #4895ef;
+      --secondary: #3f37c9;
+      --success: #4cc9f0;
+      --danger: #f72585;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --gray: #6c757d;
+      --gray-light: #e9ecef;
+      --border-radius: 10px;
+      --shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+    }
+
+    .login-container {
+      background-color: #fff;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: flex;
+      width: 900px;
+      max-width: 95%;
+    }
+
+    .login-image {
+      flex: 1;
+      background: url('assets/logofisc.png') center/cover no-repeat;
+    }
+
+    .login-form {
+      flex: 1;
+      padding: 50px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .login-form h2 {
+      text-align: center;
+      color: var(--primary);
+      font-size: 2rem;
+      margin-bottom: 30px;
+      font-weight: 700;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .input-group i {
+      position: absolute;
+      top: 12px;
+      left: 15px;
+      color: var(--gray);
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 12px 45px 12px 40px;
+      border: 1px solid var(--gray-light);
+      border-radius: var(--border-radius);
+      outline: none;
+      transition: var(--transition);
+      font-size: 1rem;
+    }
+
+    .input-group input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background-color: var(--primary);
+      border: none;
+      border-radius: var(--border-radius);
+      color: #fff;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: var(--transition);
+      font-weight: 600;
+    }
+
+    .btn:hover {
+      background-color: var(--primary-light);
+      transform: translateY(-2px);
+    }
+
+    .forgot-password {
+      text-align: right;
+      margin-top: 10px;
+    }
+
+    .forgot-password a {
+      text-decoration: none;
+      color: var(--primary);
+      font-size: 0.9rem;
+    }
+
+    .forgot-password a:hover {
+      text-decoration: underline;
+    }
+
+    .alert {
+      display: none;
+      background-color: rgba(247, 37, 133, 0.1);
+      color: var(--danger);
+      padding: 10px;
+      border-radius: var(--border-radius);
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .footer-text {
+      text-align: center;
+      margin-top: 30px;
+      font-size: 0.9rem;
+      color: var(--gray);
+    }
+
+    @media (max-width: 768px) {
+      .login-container {
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .login-image {
+        display: none;
+      }
+
+      .login-form {
+        padding: 40px 25px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-image"></div>
+    <div class="login-form">
+      <h2>Connexion</h2>
+
+      <div id="alert" class="alert"><i class="fas fa-exclamation-circle"></i> Identifiants invalides</div>
+
+      <form id="loginForm">
+        <div class="input-group">
+          <i class="fas fa-user"></i>
+          <input type="text" id="username" placeholder="Nom d'utilisateur" required>
+        </div>
+
+        <div class="input-group">
+          <i class="fas fa-lock"></i>
+          <input type="password" id="password" placeholder="Mot de passe" required>
+        </div>
+
+        <button type="submit" class="btn">Se connecter</button>
+
+        <div class="forgot-password">
+          <a href="#">Mot de passe oublié ?</a>
+        </div>
+      </form>
+
+      <div class="footer-text">
+        &copy; 2025 <strong>FiscControl</strong>. Tous droits réservés.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const alertBox = document.getElementById('alert');
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      // Exemple : vérification simple (à remplacer par un appel API)
+      if (username === 'admin' && password === '1234') {
+        window.location.href = 'fetchdata.html'; // redirection
+      } else {
+        alertBox.style.display = 'block';
+        setTimeout(() => alertBox.style.display = 'none', 3000);
+      }
+    });
+  </script>
+</body>
+</html>

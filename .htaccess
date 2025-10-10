@@ -1,0 +1,18 @@
+# Activer la réécriture d'URL
+RewriteEngine On
+
+# Ne pas réécrire si c'est un dossier existant
+RewriteCond %{REQUEST_FILENAME} -d [OR]
+
+# Ne pas réécrire si c'est un fichier existant (ex: image, css, js)
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+# Supprimer l'extension .php
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.+)$ $1.php [L]
+
+# Supprimer l'extension .html
+RewriteCond %{REQUEST_FILENAME}.html -f
+RewriteRule ^(.+)$ $1.html [L]
+

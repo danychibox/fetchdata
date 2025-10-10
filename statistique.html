@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistiques - Tableau de Bord</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --info: #43aa8b;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --gray-light: #e9ecef;
+            --border-radius: 8px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fb;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(180deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px 0;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+            z-index: 100;
+        }
+
+        .logo {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .logo span {
+            color: var(--success);
+        }
+
+        .nav-links {
+            list-style: none;
+        }
+
+        .nav-links li {
+            padding: 10px 20px;
+            transition: var(--transition);
+        }
+
+        .nav-links li:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-links li.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid var(--success);
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-links i {
+            font-size: 1.2rem;
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--gray-light);
+        }
+
+        .header h2 {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--gray);
+        }
+
+        .filter-group select, .filter-group input {
+            padding: 10px 15px;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--border-radius);
+            background-color: white;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .filter-group select:focus, .filter-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+        }
+
+        /* Stats cards */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+        }
+
+        .stat-icon.primary {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+        }
+
+        .stat-icon.success {
+            background-color: rgba(76, 201, 240, 0.1);
+            color: var(--success);
+        }
+
+        .stat-icon.warning {
+            background-color: rgba(248, 150, 30, 0.1);
+            color: var(--warning);
+        }
+
+        .stat-icon.danger {
+            background-color: rgba(247, 37, 133, 0.1);
+            color: var(--danger);
+        }
+
+        .stat-info h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-info p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .stat-change {
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        .stat-change.positive {
+            color: var(--success);
+        }
+
+        .stat-change.negative {
+            color: var(--danger);
+        }
+
+        /* Charts */
+        .charts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .chart-header h3 {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .chart-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chart-actions button {
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .chart-actions button:hover {
+            color: var(--primary);
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+        }
+
+        /* Mini charts for stats */
+        .mini-chart {
+            margin-top: 10px;
+            height: 40px;
+            width: 100%;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .charts {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            
+            .nav-links {
+                display: flex;
+                overflow-x: auto;
+            }
+            
+            .nav-links li {
+                white-space: nowrap;
+            }
+            
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .charts {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-container {
+                padding: 15px;
+            }
+            
+            .chart-wrapper {
+                height: 250px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+            
+            .filter-group {
+                width: 100%;
+            }
+        }
+
+        /* Loading spinner */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Error message */
+        .error-message {
+            background-color: rgba(247, 37, 133, 0.1);
+            color: var(--danger);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h1>Fisc<span>Control</span></h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="fetchdata.html"><i class="fas fa-home"></i> Tableau de bord</a></li>
+                <li><a href="users.html"><i class="fas fa-users"></i> Utilisateurs</a></li>
+                <li class="active"><a href="#"><i class="fas fa-chart-bar"></i> Statistiques</a></li>
+                <li><a href="#"><i class="fas fa-file-invoice"></i> Etablissement</a></li>
+                <li><a href="#"><i class="fas fa-cog"></i> Paramètres</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main content -->
+        <main class="main-content">
+            <div class="header">
+                <h2>Statistiques des Perceptions</h2>
+                <div class="user-info">
+                    <div class="user-avatar">AD</div>
+                    <span>Admin</span>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="period">Période</label>
+                    <select id="period">
+                        <option value="7">7 derniers jours</option>
+                        <option value="30" selected>30 derniers jours</option>
+                        <option value="90">3 derniers mois</option>
+                        <option value="365">12 derniers mois</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="commune">Commune</label>
+                    <select id="commune">
+                        <option value="all">Toutes les communes</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="service">Service</label>
+                    <select id="service">
+                        <option value="all">Tous les services</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="date-range">Plage de dates</label>
+                    <input type="date" id="start-date">
+                    <input type="date" id="end-date">
+                </div>
+            </div>
+
+            <!-- Error message -->
+            <div class="error-message" id="error-message" style="display: none;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span id="error-text"></span>
+            </div>
+
+            <!-- Stats cards -->
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-icon primary">
+                        <i class="fas fa-file-invoice"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="total-perceptions">0</h3>
+                        <p>Total des perceptions</p>
+                        <div class="stat-change positive" id="total-change">
+                            <i class="fas fa-arrow-up"></i> <span>0%</span> vs période précédente
+                        </div>
+                        <div class="mini-chart">
+                            <canvas id="total-trend"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon success">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="completed-perceptions">0</h3>
+                        <p>Perceptions complétées</p>
+                        <div class="stat-change positive" id="completed-change">
+                            <i class="fas fa-arrow-up"></i> <span>0%</span> vs période précédente
+                        </div>
+                        <div class="mini-chart">
+                            <canvas id="completed-trend"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon warning">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="pending-perceptions">0</h3>
+                        <p>Perceptions en attente</p>
+                        <div class="stat-change negative" id="pending-change">
+                            <i class="fas fa-arrow-down"></i> <span>0%</span> vs période précédente
+                        </div>
+                        <div class="mini-chart">
+                            <canvas id="pending-trend"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon danger">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="revenue">0 FC</h3>
+                        <p>Revenus totaux</p>
+                        <div class="stat-change positive" id="revenue-change">
+                            <i class="fas fa-arrow-up"></i> <span>0%</span> vs période précédente
+                        </div>
+                        <div class="mini-chart">
+                            <canvas id="revenue-trend"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Perceptions par Service</h3>
+                        <div class="chart-actions">
+                            <button title="Télécharger"><i class="fas fa-download"></i></button>
+                            <button title="Plein écran"><i class="fas fa-expand"></i></button>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="serviceChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Évolution Mensuelle</h3>
+                        <div class="chart-actions">
+                            <button title="Télécharger"><i class="fas fa-download"></i></button>
+                            <button title="Plein écran"><i class="fas fa-expand"></i></button>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Répartition par Commune</h3>
+                        <div class="chart-actions">
+                            <button title="Télécharger"><i class="fas fa-download"></i></button>
+                            <button title="Plein écran"><i class="fas fa-expand"></i></button>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="communeChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Statut des Perceptions</h3>
+                        <div class="chart-actions">
+                            <button title="Télécharger"><i class="fas fa-download"></i></button>
+                            <button title="Plein écran"><i class="fas fa-expand"></i></button>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <span style="margin-left: 10px;">Chargement des données statistiques...</span>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // URL de l'API
+        const API_URL = 'http://api-tax.etatcivilnordkivu.cd/etablissement/perception/liste';
+
+        // Variables globales
+        let apiData = [];
+        let charts = {};
+        let filteredData = [];
+
+        // Fonction pour récupérer les données de l'API
+        async function fetchData() {
+            try {
+                showLoading();
+                hideError();
+                
+                const response = await fetch(API_URL);
+                
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.message === "liste" && data.data) {
+                    apiData = data.data;
+                    filteredData = [...apiData];
+                    processData();
+                    hideLoading();
+                } else {
+                    throw new Error("Format de données incorrect");
+                }
+            } catch (error) {
+                console.error("Erreur lors de la récupération des données:", error);
+                showError(`Erreur lors du chargement des données: ${error.message}`);
+                hideLoading();
+            }
+        }
+
+        // Fonction pour traiter les données et générer les statistiques
+        function processData() {
+            // Mettre à jour les filtres
+            updateFilters();
+            
+            // Calculer les statistiques de base
+            calculateBasicStats();
+            
+            // Générer les graphiques
+            generateCharts();
+            
+            // Mettre à jour les mini-graphiques des cartes de statistiques
+            updateMiniCharts();
+        }
+
+        // Fonction pour mettre à jour les options des filtres
+        function updateFilters() {
+            const communes = [...new Set(apiData.map(item => {
+                try {
+                    const entete = JSON.parse(item.entete);
+                    return entete.commune || 'Non spécifiée';
+                } catch {
+                    return 'Non spécifiée';
+                }
+            }))];
+            
+            const services = [...new Set(apiData.map(item => {
+                try {
+                    const entete = JSON.parse(item.entete);
+                    return entete.service || 'Non spécifié';
+                } catch {
+                    return 'Non spécifié';
+                }
+            }))];
+            
+            const communeSelect = document.getElementById('commune');
+            communeSelect.innerHTML = '<option value="all">Toutes les communes</option>';
+            communes.forEach(commune => {
+                const option = document.createElement('option');
+                option.value = commune;
+                option.textContent = commune;
+                communeSelect.appendChild(option);
+            });
+            
+            const serviceSelect = document.getElementById('service');
+            serviceSelect.innerHTML = '<option value="all">Tous les services</option>';
+            services.forEach(service => {
+                const option = document.createElement('option');
+                option.value = service;
+                option.textContent = service;
+                serviceSelect.appendChild(option);
+            });
+        }
+
+        // Fonction pour calculer les statistiques de base
+        function calculateBasicStats() {
+            const parsedData = parseData(filteredData);
+            
+            // Total des perceptions
+            const total = parsedData.length;
+            document.getElementById('total-perceptions').textContent = total;
+            
+            // Perceptions complétées
+            const completed = parsedData.filter(item => 
+                item.service_comptable.montant_percu_en_chiffre && 
+                item.service_comptable.montant_percu_en_chiffre !== "").length;
+            document.getElementById('completed-perceptions').textContent = completed;
+            
+            // Perceptions en attente
+            const pending = parsedData.filter(item => 
+                !item.service_comptable.montant_percu_en_chiffre && 
+                item.service_ordonateur.montant_vise_en_chiffre && 
+                item.service_ordonateur.montant_vise_en_chiffre !== "").length;
+            document.getElementById('pending-perceptions').textContent = pending;
+            
+            // Revenus totaux
+            const revenue = parsedData.reduce((sum, item) => {
+                const amount = parseInt(item.service_taxateur.montant_chiffre) || 0;
+                return sum + amount;
+            }, 0);
+            document.getElementById('revenue').textContent = revenue.toLocaleString('fr-FR') + ' FC';
+            
+            // Calculer les pourcentages de changement (simulés pour l'exemple)
+            document.getElementById('total-change').innerHTML = 
+                `<i class="fas fa-arrow-up"></i> <span>${Math.round(Math.random() * 20)}%</span> vs période précédente`;
+            
+            document.getElementById('completed-change').innerHTML = 
+                `<i class="fas fa-arrow-up"></i> <span>${Math.round(Math.random() * 15)}%</span> vs période précédente`;
+            
+            document.getElementById('pending-change').innerHTML = 
+                `<i class="fas fa-arrow-down"></i> <span>${Math.round(Math.random() * 10)}%</span> vs période précédente`;
+            
+            document.getElementById('revenue-change').innerHTML = 
+                `<i class="fas fa-arrow-up"></i> <span>${Math.round(Math.random() * 25)}%</span> vs période précédente`;
+        }
+
+        // Fonction pour générer les graphiques principaux
+        function generateCharts() {
+            const parsedData = parseData(filteredData);
+            
+            // Données pour les graphiques
+            const serviceData = getServiceData(parsedData);
+            const monthlyData = getMonthlyData(parsedData);
+            const communeData = getCommuneData(parsedData);
+            const statusData = getStatusData(parsedData);
+            
+            // Graphique des services
+            if (charts.serviceChart) {
+                charts.serviceChart.destroy();
+            }
+            const serviceCtx = document.getElementById('serviceChart').getContext('2d');
+            charts.serviceChart = new Chart(serviceCtx, {
+                type: 'bar',
+                data: {
+                    labels: serviceData.labels,
+                    datasets: [{
+                        label: 'Nombre de perceptions',
+                        data: serviceData.values,
+                        backgroundColor: [
+                            'rgba(67, 97, 238, 0.7)',
+                            'rgba(76, 201, 240, 0.7)',
+                            'rgba(248, 150, 30, 0.7)',
+                            'rgba(247, 37, 133, 0.7)',
+                            'rgba(67, 170, 139, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(67, 97, 238, 1)',
+                            'rgba(76, 201, 240, 1)',
+                            'rgba(248, 150, 30, 1)',
+                            'rgba(247, 37, 133, 1)',
+                            'rgba(67, 170, 139, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Graphique mensuel
+            if (charts.monthlyChart) {
+                charts.monthlyChart.destroy();
+            }
+            const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+            charts.monthlyChart = new Chart(monthlyCtx, {
+                type: 'line',
+                data: {
+                    labels: monthlyData.labels,
+                    datasets: [{
+                        label: 'Perceptions',
+                        data: monthlyData.values,
+                        backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                        borderColor: 'rgba(67, 97, 238, 1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // Graphique des communes
+            if (charts.communeChart) {
+                charts.communeChart.destroy();
+            }
+            const communeCtx = document.getElementById('communeChart').getContext('2d');
+            charts.communeChart = new Chart(communeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: communeData.labels,
+                    datasets: [{
+                        data: communeData.values,
+                        backgroundColor: [
+                            'rgba(67, 97, 238, 0.7)',
+                            'rgba(76, 201, 240, 0.7)',
+                            'rgba(248, 150, 30, 0.7)',
+                            'rgba(247, 37, 133, 0.7)',
+                            'rgba(67, 170, 139, 0.7)',
+                            'rgba(102, 16, 242, 0.7)',
+                            'rgba(239, 71, 111, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(67, 97, 238, 1)',
+                            'rgba(76, 201, 240, 1)',
+                            'rgba(248, 150, 30, 1)',
+                            'rgba(247, 37, 133, 1)',
+                            'rgba(67, 170, 139, 1)',
+                            'rgba(102, 16, 242, 1)',
+                            'rgba(239, 71, 111, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+            
+            // Graphique des statuts
+            if (charts.statusChart) {
+                charts.statusChart.destroy();
+            }
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            charts.statusChart = new Chart(statusCtx, {
+                type: 'pie',
+                data: {
+                    labels: statusData.labels,
+                    datasets: [{
+                        data: statusData.values,
+                        backgroundColor: [
+                            'rgba(76, 201, 240, 0.7)',
+                            'rgba(248, 150, 30, 0.7)',
+                            'rgba(247, 37, 133, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(76, 201, 240, 1)',
+                            'rgba(248, 150, 30, 1)',
+                            'rgba(247, 37, 133, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Fonction pour mettre à jour les mini-graphiques
+        function updateMiniCharts() {
+            // Données simulées pour les tendances
+            const trendData = Array.from({length: 7}, () => Math.floor(Math.random() * 10) + 1);
+            
+            // Mini-graphique pour le total
+            const totalTrendCtx = document.getElementById('total-trend').getContext('2d');
+            new Chart(totalTrendCtx, {
+                type: 'line',
+                data: {
+                    labels: ['', '', '', '', '', '', ''],
+                    datasets: [{
+                        data: trendData,
+                        borderColor: 'rgba(67, 97, 238, 1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        pointRadius: 0,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: { display: false },
+                        y: { display: false }
+                    }
+                }
+            });
+            
+            // Répéter pour les autres mini-graphiques avec des données différentes
+            ['completed-trend', 'pending-trend', 'revenue-trend'].forEach((id, index) => {
+                const ctx = document.getElementById(id).getContext('2d');
+                const data = Array.from({length: 7}, () => Math.floor(Math.random() * 10) + 1);
+                const colors = [
+                    'rgba(76, 201, 240, 1)',
+                    'rgba(248, 150, 30, 1)',
+                    'rgba(247, 37, 133, 1)'
+                ];
+                
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['', '', '', '', '', '', ''],
+                        datasets: [{
+                            data: data,
+                            borderColor: colors[index],
+                            borderWidth: 2,
+                            tension: 0.3,
+                            pointRadius: 0,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: { display: false },
+                            y: { display: false }
+                        }
+                    }
+                });
+            });
+        }
+
+        // Fonctions utilitaires pour extraire les données des graphiques
+        function getServiceData(data) {
+            const services = {};
+            data.forEach(item => {
+                const service = item.entete.service || 'Non spécifié';
+                services[service] = (services[service] || 0) + 1;
+            });
+            
+            return {
+                labels: Object.keys(services),
+                values: Object.values(services)
+            };
+        }
+
+        function getMonthlyData(data) {
+            // Simuler des données mensuelles pour l'exemple
+            const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+            const values = Array.from({length: 12}, () => Math.floor(Math.random() * 10) + 1);
+            
+            return {
+                labels: months,
+                values: values
+            };
+        }
+
+        function getCommuneData(data) {
+            const communes = {};
+            data.forEach(item => {
+                const commune = item.entete.commune || 'Non spécifiée';
+                communes[commune] = (communes[commune] || 0) + 1;
+            });
+            
+            return {
+                labels: Object.keys(communes),
+                values: Object.values(communes)
+            };
+        }
+
+        function getStatusData(data) {
+            let completed = 0, pending = 0, errors = 0;
+            
+            data.forEach(item => {
+                if (item.service_comptable.montant_percu_en_chiffre && 
+                    item.service_comptable.montant_percu_en_chiffre !== "") {
+                    completed++;
+                } else if (item.service_ordonateur.montant_vise_en_chiffre && 
+                          item.service_ordonateur.montant_vise_en_chiffre !== "") {
+                    pending++;
+                } else {
+                    errors++;
+                }
+            });
+            
+            return {
+                labels: ['Complétés', 'En attente', 'Erreurs'],
+                values: [completed, pending, errors]
+            };
+        }
+
+        // Fonction pour parser les données
+        function parseData(data) {
+            return data.map(item => {
+                try {
+                    return {
+                        ...item,
+                        entete: JSON.parse(item.entete),
+                        service_taxateur: JSON.parse(item.service_taxateur),
+                        service_ordonateur: JSON.parse(item.service_ordonateur),
+                        service_comptable: JSON.parse(item.service_comptable)
+                    };
+                } catch (error) {
+                    console.error("Erreur de parsing JSON pour l'item:", item.id, error);
+                    return {
+                        ...item,
+                        entete: {},
+                        service_taxateur: {},
+                        service_ordonateur: {},
+                        service_comptable: {}
+                    };
+                }
+            });
+        }
+
+        // Fonctions d'interface utilisateur
+        function showLoading() {
+            document.getElementById('loading').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function showError(message) {
+            document.getElementById('error-text').textContent = message;
+            document.getElementById('error-message').style.display = 'flex';
+        }
+
+        function hideError() {
+            document.getElementById('error-message').style.display = 'none';
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Charger les données au démarrage
+            fetchData();
+            
+            // Configurer les écouteurs d'événements pour les filtres
+            document.getElementById('period').addEventListener('change', function() {
+                // Simuler le filtrage par période
+                processData();
+            });
+            
+            document.getElementById('commune').addEventListener('change', function() {
+                const commune = this.value;
+                if (commune === 'all') {
+                    filteredData = [...apiData];
+                } else {
+                    filteredData = apiData.filter(item => {
+                        try {
+                            const entete = JSON.parse(item.entete);
+                            return entete.commune === commune;
+                        } catch {
+                            return false;
+                        }
+                    });
+                }
+                processData();
+            });
+            
+            document.getElementById('service').addEventListener('change', function() {
+                const service = this.value;
+                if (service === 'all') {
+                    filteredData = [...apiData];
+                } else {
+                    filteredData = apiData.filter(item => {
+                        try {
+                            const entete = JSON.parse(item.entete);
+                            return entete.service === service;
+                        } catch {
+                            return false;
+                        }
+                    });
+                }
+                processData();
+            });
+            
+            // Rafraîchir les données toutes les 5 minutes
+            setInterval(fetchData, 5 * 60 * 1000);
+        });
+    </script>
+</body>
+</html>

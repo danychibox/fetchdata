@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Création d'Utilisateurs - Administration</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --info: #43aa8b;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --gray-light: #e9ecef;
+            --border-radius: 8px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fb;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(180deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px 0;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+            z-index: 100;
+        }
+
+        .logo {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .logo span {
+            color: var(--success);
+        }
+
+        .nav-links {
+            list-style: none;
+        }
+
+        .nav-links li {
+            padding: 10px 20px;
+            transition: var(--transition);
+        }
+
+        .nav-links li:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-links li.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid var(--success);
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-links i {
+            font-size: 1.2rem;
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--gray-light);
+        }
+
+        .header h2 {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Form container */
+        .form-container {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-header h3 {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+
+        .form-header p {
+            color: var(--gray);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        .password-strength {
+            margin-top: 5px;
+            height: 5px;
+            border-radius: 5px;
+            background-color: var(--gray-light);
+            overflow: hidden;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            width: 0%;
+            transition: var(--transition);
+        }
+
+        .password-strength.weak .password-strength-bar {
+            background-color: var(--danger);
+            width: 33%;
+        }
+
+        .password-strength.medium .password-strength-bar {
+            background-color: var(--warning);
+            width: 66%;
+        }
+
+        .password-strength.strong .password-strength-bar {
+            background-color: var(--success);
+            width: 100%;
+        }
+
+        .password-requirements {
+            margin-top: 5px;
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .password-requirements ul {
+            list-style: none;
+            margin-top: 5px;
+        }
+
+        .password-requirements li {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 3px;
+        }
+
+        .password-requirements .requirement-met {
+            color: var(--success);
+        }
+
+        .password-requirements .requirement-not-met {
+            color: var(--gray);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-light);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--gray);
+            color: var(--gray);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--gray-light);
+        }
+
+        /* Success message */
+        .success-message {
+            background-color: rgba(76, 201, 240, 0.1);
+            color: var(--success);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Error message */
+        .error-message {
+            background-color: rgba(247, 37, 133, 0.1);
+            color: var(--danger);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Loading spinner */
+        .loading {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-left-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* User list */
+        .user-list-container {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-top: 30px;
+        }
+
+        .user-list-header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--gray-light);
+        }
+
+        .user-list-header h3 {
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background-color: var(--gray-light);
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid var(--gray-light);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge.admin {
+            background-color: rgba(67, 97, 238, 0.2);
+            color: var(--primary);
+        }
+
+        .badge.user {
+            background-color: rgba(76, 201, 240, 0.2);
+            color: var(--success);
+        }
+
+        .badge.moderator {
+            background-color: rgba(248, 150, 30, 0.2);
+            color: var(--warning);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            flex: none;
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #e11d74;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            
+            .nav-links {
+                display: flex;
+                overflow-x: auto;
+            }
+            
+            .nav-links li {
+                white-space: nowrap;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .user-list-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .form-container {
+                padding: 20px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h1>Admin<span>Panel</span></h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="fetchdata.html"><i class="fas fa-home"></i> Tableau de bord</a></li>
+                <li class="active"><a href="#"><i class="fas fa-users"></i> Utilisateurs</a></li>
+                <li><a href="statistique.html"><i class="fas fa-chart-bar"></i> Statistiques</a></li>
+                <li><a href="#"><i class="fas fa-file-invoice"></i> Etablissement</a></li>
+                <li><a href="#"><i class="fas fa-cog"></i> Paramètres</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main content -->
+        <main class="main-content">
+            <div class="header">
+                <h2>Gestion des Utilisateurs</h2>
+                <div class="user-info">
+                    <div class="user-avatar">AD</div>
+                    <span>Administrateur</span>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div class="success-message" id="success-message">
+                <i class="fas fa-check-circle"></i>
+                <span id="success-text"></span>
+            </div>
+
+            <div class="error-message" id="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span id="error-text"></span>
+            </div>
+
+            <!-- Formulaire de création d'utilisateur -->
+            <div class="form-container">
+                <div class="form-header">
+                    <h3>Créer un nouvel utilisateur</h3>
+                    <p>Remplissez les informations ci-dessous pour créer un nouveau compte utilisateur</p>
+                </div>
+
+                <form id="user-form">
+                    <div class="form-group">
+                        <label for="username">Nom d'utilisateur *</label>
+                        <input type="text" id="username" name="username" required placeholder="Entrez le nom d'utilisateur">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Mot de passe *</label>
+                        <input type="password" id="password" name="password" required placeholder="Entrez le mot de passe">
+                        <div class="password-strength" id="password-strength">
+                            <div class="password-strength-bar"></div>
+                        </div>
+                        <div class="password-requirements">
+                            Le mot de passe doit contenir:
+                            <ul>
+                                <li id="length-req" class="requirement-not-met">
+                                    <i class="fas fa-circle"></i> Au moins 8 caractères
+                                </li>
+                                <li id="uppercase-req" class="requirement-not-met">
+                                    <i class="fas fa-circle"></i> Une lettre majuscule
+                                </li>
+                                <li id="lowercase-req" class="requirement-not-met">
+                                    <i class="fas fa-circle"></i> Une lettre minuscule
+                                </li>
+                                <li id="number-req" class="requirement-not-met">
+                                    <i class="fas fa-circle"></i> Un chiffre
+                                </li>
+                                <li id="special-req" class="requirement-not-met">
+                                    <i class="fas fa-circle"></i> Un caractère spécial
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirm-password">Confirmer le mot de passe *</label>
+                        <input type="password" id="confirm-password" name="confirm-password" required placeholder="Confirmez le mot de passe">
+                        <div id="password-match" style="margin-top: 5px; font-size: 0.85rem; display: none;">
+                            <i class="fas fa-check" style="color: var(--success);"></i> Les mots de passe correspondent
+                        </div>
+                        <div id="password-mismatch" style="margin-top: 5px; font-size: 0.85rem; display: none;">
+                            <i class="fas fa-times" style="color: var(--danger);"></i> Les mots de passe ne correspondent pas
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="role">Rôle *</label>
+                        <select id="role" name="role" required>
+                            <option value="">Sélectionnez un rôle</option>
+                            <option value="admin">Administrateur</option>
+                            <option value="Ordonnateur">Ordonnateur</option>
+                            <option value="user">Collecteur</option>
+                        </select>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="submit-btn">
+                            <div class="loading" id="submit-loading">
+                                <div class="spinner"></div>
+                            </div>
+                            <span>Créer l'utilisateur</span>
+                        </button>
+                        <button type="reset" class="btn btn-outline">Réinitialiser</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Liste des utilisateurs existants -->
+            <div class="user-list-container">
+                <div class="user-list-header">
+                    <h3>Utilisateurs existants</h3>
+                    <button class="btn btn-primary btn-sm" id="refresh-users">
+                        <i class="fas fa-sync-alt"></i> Actualiser
+                    </button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nom d'utilisateur</th>
+                            <th>Rôle</th>
+                            <th>Date de création</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <!-- Les utilisateurs seront chargés ici -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+   <script>
+const API_URL = 'http://api-tax.etatcivilnordkivu.cd/user/auth/register';
+const API_GET_USERS = 'http://api-tax.etatcivilnordkivu.cd/users';
+
+let users = [];
+
+// Afficher un message de succès
+function showSuccess(message) {
+    const el = document.getElementById('success-message');
+    document.getElementById('success-text').textContent = message;
+    el.style.display = 'flex';
+    setTimeout(() => el.style.display = 'none', 5000);
+}
+
+// Afficher un message d'erreur
+function showError(message) {
+    const el = document.getElementById('error-message');
+    document.getElementById('error-text').textContent = message;
+    el.style.display = 'flex';
+}
+
+// Masquer l'erreur
+function hideError() {
+    document.getElementById('error-message').style.display = 'none';
+}
+
+// Vérifier la force du mot de passe
+function checkPasswordStrength(password) {
+    const strengthBar = document.getElementById('password-strength');
+    const requirements = {
+        length: document.getElementById('length-req'),
+        uppercase: document.getElementById('uppercase-req'),
+        lowercase: document.getElementById('lowercase-req'),
+        number: document.getElementById('number-req'),
+        special: document.getElementById('special-req')
+    };
+    strengthBar.className = 'password-strength';
+    Object.values(requirements).forEach(req => {
+        req.className = 'requirement-not-met';
+        req.querySelector('i').className = 'fas fa-circle';
+    });
+    if (!password) return;
+
+    let strength = 0;
+    if (password.length >= 8) { strength++; requirements.length.className = 'requirement-met'; requirements.length.querySelector('i').className = 'fas fa-check-circle'; }
+    if (/[A-Z]/.test(password)) { strength++; requirements.uppercase.className = 'requirement-met'; requirements.uppercase.querySelector('i').className = 'fas fa-check-circle'; }
+    if (/[a-z]/.test(password)) { strength++; requirements.lowercase.className = 'requirement-met'; requirements.lowercase.querySelector('i').className = 'fas fa-check-circle'; }
+    if (/[0-9]/.test(password)) { strength++; requirements.number.className = 'requirement-met'; requirements.number.querySelector('i').className = 'fas fa-check-circle'; }
+    if (/[^A-Za-z0-9]/.test(password)) { strength++; requirements.special.className = 'requirement-met'; requirements.special.querySelector('i').className = 'fas fa-check-circle'; }
+
+    if (strength <= 2) strengthBar.classList.add('weak');
+    else if (strength <= 4) strengthBar.classList.add('medium');
+    else strengthBar.classList.add('strong');
+}
+
+// Vérifier la correspondance des mots de passe
+function checkPasswordMatch() {
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirm-password').value;
+    const matchElement = document.getElementById('password-match');
+    const mismatchElement = document.getElementById('password-mismatch');
+
+    if (!password || !confirmPassword) { matchElement.style.display = 'none'; mismatchElement.style.display = 'none'; return; }
+
+    if (password === confirmPassword) {
+        matchElement.style.display = 'block';
+        mismatchElement.style.display = 'none';
+    } else {
+        matchElement.style.display = 'none';
+        mismatchElement.style.display = 'block';
+    }
+}
+
+// Charger les utilisateurs depuis l'API
+async function loadUsers() {
+    try {
+        const res = await fetch(API_GET_USERS);
+        if (!res.ok) throw new Error("Impossible de charger les utilisateurs");
+
+        const result = await res.json();
+        // Adapte selon la structure de ton API (ici on suppose result.data contient les utilisateurs)
+        users = result.data.map(u => ({
+            id: u.id,
+            username: u.username,
+            role: u.role,
+            createdAt: new Date(u.createdAt || Date.now()).toLocaleDateString('fr-FR')
+        }));
+        renderUsers();
+    } catch (error) {
+        console.error("Erreur API:", error);
+        showError("Impossible de charger les utilisateurs depuis le serveur.");
+    }
+}
+
+// Afficher les utilisateurs dans le tableau
+function renderUsers() {
+    const tbody = document.getElementById('users-table-body');
+    tbody.innerHTML = '';
+
+    if (users.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:40px;">
+            <i class="fas fa-users" style="font-size:3rem; color:var(--gray-light); margin-bottom:10px;"></i>
+            <p>Aucun utilisateur trouvé</p>
+        </td></tr>`;
+        return;
+    }
+
+    users.forEach(user => {
+        const row = document.createElement('tr');
+        let badgeClass = 'user';
+        if (user.role.toLowerCase() === 'admin') badgeClass = 'admin';
+        if (user.role.toLowerCase() === 'moderator') badgeClass = 'moderator';
+
+        row.innerHTML = `
+            <td>${user.id}</td>
+            <td>${user.username}</td>
+            <td><span class="badge ${badgeClass}">${user.role}</span></td>
+            <td>${user.createdAt}</td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn btn-primary btn-sm" onclick="editUser(${user.id})">
+                        <i class="fas fa-edit"></i> Modifier
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.id})">
+                        <i class="fas fa-trash"></i> Supprimer
+                    </button>
+                </div>
+            </td>`;
+        tbody.appendChild(row);
+    });
+}
+
+// Créer un utilisateur via l'API
+async function createUser(userData) {
+    document.getElementById('submit-loading').style.display = 'flex';
+    document.querySelector('#submit-btn span').style.display = 'none';
+    try {
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData)
+        });
+        if (!res.ok) throw new Error(`Erreur HTTP: ${res.status}`);
+        const result = await res.json();
+
+        showSuccess('Utilisateur créé avec succès!');
+        document.getElementById('user-form').reset();
+        await loadUsers(); // Recharger la liste après création
+    } catch (error) {
+        console.error(error);
+        showError('Erreur lors de la création: ' + error.message);
+    } finally {
+        document.getElementById('submit-loading').style.display = 'none';
+        document.querySelector('#submit-btn span').style.display = 'inline';
+    }
+}
+
+// Modifier un utilisateur (local)
+function editUser(id) {
+    const user = users.find(u => u.id === id);
+    if (!user) return;
+    document.getElementById('username').value = user.username;
+    document.getElementById('role').value = user.role;
+    document.querySelector('#submit-btn span').textContent = 'Mettre à jour';
+    document.querySelector('.form-container').scrollIntoView({ behavior: 'smooth' });
+    showSuccess('Remplissez le formulaire pour mettre à jour l\'utilisateur');
+}
+
+// Supprimer un utilisateur (local)
+function deleteUser(id) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
+        users = users.filter(u => u.id !== id);
+        renderUsers();
+        showSuccess('Utilisateur supprimé avec succès!');
+    }
+}
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', () => {
+    loadUsers();
+
+    document.getElementById('password').addEventListener('input', e => {
+        checkPasswordStrength(e.target.value);
+        checkPasswordMatch();
+    });
+
+    document.getElementById('confirm-password').addEventListener('input', checkPasswordMatch);
+
+    document.getElementById('user-form').addEventListener('submit', e => {
+        e.preventDefault();
+        hideError();
+
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+        const role = document.getElementById('role').value;
+
+        if (!username || !password || !role) {
+            showError('Tous les champs sont obligatoires');
+            return;
+        }
+        if (password !== confirmPassword) {
+            showError('Les mots de passe ne correspondent pas');
+            return;
+        }
+        if (password.length < 8) {
+            showError('Le mot de passe doit contenir au moins 8 caractères');
+            return;
+        }
+
+        createUser({ username, password, role });
+    });
+
+    document.getElementById('refresh-users').addEventListener('click', loadUsers);
+
+    document.getElementById('user-form').addEventListener('reset', () => {
+        hideError();
+        document.querySelector('#submit-btn span').textContent = 'Créer l\'utilisateur';
+        document.getElementById('password-strength').className = 'password-strength';
+        document.getElementById('password-match').style.display = 'none';
+        document.getElementById('password-mismatch').style.display = 'none';
+    });
+});
+</script>
+
+</body>
+</html>
