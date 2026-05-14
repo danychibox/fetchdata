@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administration - Gestion des perceptions</title>
+    <title>Carte des perceptions - Ville de Beni</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
             --primary: #4361ee;
@@ -198,6 +199,111 @@
         .stat-info p {
             color: var(--gray);
             font-size: 0.9rem;
+        }
+
+        /* Map container */
+        .map-container {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 30px;
+            height: 600px;
+            position: relative;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+            z-index: 1;
+        }
+
+        .map-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 10px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .map-controls h4 {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: var(--dark);
+        }
+
+        .filter-options {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .filter-option input {
+            margin-right: 5px;
+        }
+
+        .filter-option label {
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .commune-info {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            box-shadow: var(--shadow);
+            max-width: 300px;
+            display: none;
+        }
+
+        .commune-info.active {
+            display: block;
+        }
+
+        .commune-info h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .commune-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .commune-stat {
+            text-align: center;
+            padding: 8px;
+            border-radius: var(--border-radius);
+            background: var(--gray-light);
+        }
+
+        .commune-stat h4 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .commune-stat p {
+            font-size: 0.7rem;
+            color: var(--gray);
         }
 
         /* Data table */
@@ -463,6 +569,75 @@
             gap: 10px;
         }
 
+        /* Legend */
+        .legend {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            box-shadow: var(--shadow);
+            max-width: 200px;
+        }
+
+        .legend h4 {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: var(--dark);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 5px;
+        }
+
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+        }
+
+        .legend-text {
+            font-size: 0.8rem;
+        }
+
+        /* Custom marker styles */
+        .custom-marker {
+            background: var(--primary);
+            border: 3px solid white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .marker-success {
+            background: var(--success);
+        }
+
+        .marker-warning {
+            background: var(--warning);
+        }
+
+        .marker-danger {
+            background: var(--danger);
+        }
+
+        .marker-high {
+            background: #3f37c9;
+        }
+
         /* Responsive */
         @media (max-width: 992px) {
             .container {
@@ -486,6 +661,10 @@
             .stats {
                 grid-template-columns: repeat(2, 1fr);
             }
+            
+            .map-container {
+                height: 400px;
+            }
         }
 
         @media (max-width: 768px) {
@@ -507,6 +686,27 @@
                 display: block;
                 overflow-x: auto;
             }
+            
+            .map-controls {
+                position: relative;
+                top: 0;
+                right: 0;
+                margin-bottom: 10px;
+            }
+            
+            .commune-info {
+                position: relative;
+                bottom: 0;
+                left: 0;
+                margin-top: 10px;
+            }
+            
+            .legend {
+                position: relative;
+                bottom: 0;
+                right: 0;
+                margin-top: 10px;
+            }
         }
     </style>
 </head>
@@ -518,18 +718,18 @@
                 <h1>Fisc<span>Control</span></h1>
             </div>
             <ul class="nav-links">
-                <li class="active"><a href="#"><i class="fas fa-home"></i> Tableau de bord</a></li>
+                <li><a href="index.html"><i class="fas fa-home"></i> Tableau de bord</a></li>
                 <li><a href="#"><i class="fas fa-users"></i> Utilisateurs</a></li>
                 <li><a href="statistique.html"><i class="fas fa-chart-bar"></i> Statistiques</a></li>
                 <li><a href="users.html"><i class="fas fa-cog"></i> Etablissement</a></li>
-                <li><a href="carte.html"><i class="fas fa-question-circle"></i>Carte</a></li>
+                <li class="active"><a href="carte.html"><i class="fas fa-map"></i> Carte</a></li>
             </ul>
         </aside>
 
         <!-- Main content -->
         <main class="main-content">
             <div class="header">
-                <h2>Gestion des perceptions</h2>
+                <h2>Carte des perceptions - Ville de Beni</h2>
                 <div class="user-info">
                     <div class="user-avatar">AD</div>
                     <span>Admin</span>
@@ -540,38 +740,38 @@
             <div class="stats">
                 <div class="stat-card">
                     <div class="stat-icon primary">
-                        <i class="fas fa-file-invoice"></i>
+                        <i class="fas fa-map-marker-alt"></i>
                     </div>
                     <div class="stat-info">
-                        <h3 id="total-records">0</h3>
-                        <p>Total des enregistrements</p>
+                        <h3 id="total-communes">0</h3>
+                        <p>Communes couvertes</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon success">
-                        <i class="fas fa-check-circle"></i>
+                        <i class="fas fa-file-invoice"></i>
                     </div>
                     <div class="stat-info">
-                        <h3 id="completed">0</h3>
-                        <p>Complétés</p>
+                        <h3 id="total-perceptions">0</h3>
+                        <p>Total des perceptions</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon warning">
-                        <i class="fas fa-clock"></i>
+                        <i class="fas fa-money-bill-wave"></i>
                     </div>
                     <div class="stat-info">
-                        <h3 id="pending">0</h3>
-                        <p>En attente</p>
+                        <h3 id="total-montant">0</h3>
+                        <p>Montant total (FC)</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon danger">
-                        <i class="fas fa-exclamation-circle"></i>
+                        <i class="fas fa-chart-line"></i>
                     </div>
                     <div class="stat-info">
-                        <h3 id="errors">0</h3>
-                        <p>Erreurs</p>
+                        <h3 id="avg-perception">0</h3>
+                        <p>Moyenne par commune</p>
                     </div>
                 </div>
             </div>
@@ -580,6 +780,74 @@
             <div class="error-message" id="error-message" style="display: none;">
                 <i class="fas fa-exclamation-triangle"></i>
                 <span id="error-text"></span>
+            </div>
+
+            <!-- Map container -->
+            <div class="map-container">
+                <div id="map"></div>
+                
+                <!-- Map controls -->
+                <div class="map-controls">
+                    <h4>Filtrer par statut</h4>
+                    <div class="filter-options">
+                        <div class="filter-option">
+                            <input type="checkbox" id="filter-completed" checked>
+                            <label for="filter-completed">Complétés</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="filter-pending" checked>
+                            <label for="filter-pending">En attente</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="filter-errors" checked>
+                            <label for="filter-errors">Erreurs</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Commune info panel -->
+                <div class="commune-info" id="commune-info">
+                    <h3 id="commune-name">Commune</h3>
+                    <div class="commune-stats">
+                        <div class="commune-stat">
+                            <h4 id="commune-total">0</h4>
+                            <p>Total</p>
+                        </div>
+                        <div class="commune-stat">
+                            <h4 id="commune-completed">0</h4>
+                            <p>Complétés</p>
+                        </div>
+                        <div class="commune-stat">
+                            <h4 id="commune-pending">0</h4>
+                            <p>En attente</p>
+                        </div>
+                        <div class="commune-stat">
+                            <h4 id="commune-errors">0</h4>
+                            <p>Erreurs</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Legend -->
+                <div class="legend">
+                    <h4>Légende des marqueurs</h4>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #f72585;"></div>
+                        <div class="legend-text">0-10 perceptions</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #f8961e;"></div>
+                        <div class="legend-text">11-30 perceptions</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #4361ee;"></div>
+                        <div class="legend-text">31-50 perceptions</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #3f37c9;"></div>
+                        <div class="legend-text">+50 perceptions</div>
+                    </div>
+                </div>
             </div>
 
             <!-- Data table -->
@@ -599,10 +867,10 @@
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>etablissement</th>
+                            <th>Établissement</th>
+                            <th>Commune</th>
                             <th>Service</th>
                             <th>Taxe</th>
-                            <th>Numéro</th>
                             <th>Date</th>
                             <th>Montant</th>
                             <th>Statut</th>
@@ -630,6 +898,7 @@
         </div>
     </div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         // URL de l'API
         const API_URL = 'http://api-tax.etatcivilnordkivu.cd/etablissement/perception/liste';
@@ -637,6 +906,201 @@
         // Variables globales
         let apiData = [];
         let filteredData = [];
+        let map;
+        let communeData = {};
+        let communeMarkers = {};
+
+        // Conversion des coordonnées degrés-minutes-secondes en décimales
+        // 0° 29′ 18″ nord, 29° 27′ 32″ est
+        const latitude = 0 + 29/60 + 18/3600;  // 0.488333
+        const longitude = 29 + 27/60 + 32/3600; // 29.458889
+
+        // Données géographiques pour les communes de Beni
+        const communesBeni = {
+            "Commune de Beu": { 
+                lat: latitude, 
+                lng: longitude,
+                description: "Centre administratif et commercial de Beni"
+            },
+            "Commune Ruwenzori": { 
+                lat: latitude + 0.005, 
+                lng: longitude - 0.015,
+                description: "Zone résidentielle et commerciale"
+            },
+            "Commune Mulekera": { 
+                lat: latitude + 0.015, 
+                lng: longitude + 0.01,
+                description: "Quartier périphérique nord-est"
+            },
+            "Commune Bungulu": { 
+                lat: latitude - 0.015, 
+                lng: longitude + 0.01,
+                description: "Quartier périphérique sud-est"
+            }
+        };
+
+        // Fonction pour créer un marqueur personnalisé avec le vrai nombre
+        function createCustomMarker(count, communeName) {
+            const color = getMarkerColor(count);
+            const markerDiv = document.createElement('div');
+            markerDiv.className = `custom-marker ${color}`;
+            markerDiv.innerHTML = `<span>${count}</span>`;
+            markerDiv.title = `${communeName}: ${count} perceptions`;
+            return markerDiv;
+        }
+
+        // Fonction pour obtenir la couleur du marqueur basée sur le nombre réel de perceptions
+        function getMarkerColor(count) {
+            if (count === 0) return 'marker-danger';
+            if (count <= 10) return 'marker-danger';
+            if (count <= 30) return 'marker-warning';
+            if (count <= 50) return '';
+            return 'marker-high';
+        }
+
+        // Fonction pour initialiser la carte
+        function initMap() {
+            // Centrer sur les coordonnées spécifiées
+            map = L.map('map').setView([latitude, longitude], 13);
+
+            // Ajouter la couche de tuiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            // Ajouter un marqueur au centre de Beni
+            L.marker([latitude, longitude])
+                .addTo(map)
+                .bindPopup('<b>Centre de Beni</b><br>0° 29′ 18″ N, 29° 27′ 32″ E<br>Point central de la ville')
+                .openPopup();
+
+            // Initialiser les marqueurs pour chaque commune avec 0 perceptions initialement
+            for (const [commune, data] of Object.entries(communesBeni)) {
+                const icon = L.divIcon({
+                    html: createCustomMarker(0, commune).outerHTML,
+                    className: 'custom-marker-container',
+                    iconSize: [50, 50],
+                    iconAnchor: [25, 25]
+                });
+
+                const marker = L.marker([data.lat, data.lng], { icon: icon })
+                    .addTo(map)
+                    .bindPopup(`
+                        <h3>${commune}</h3>
+                        <p><strong>Description:</strong> ${data.description}</p>
+                        <p><strong>Perceptions:</strong> <span id="popup-${commune.replace(/\s+/g, '-')}">0</span></p>
+                        <button class="btn btn-primary btn-sm" onclick="showCommuneInfo('${commune}')">
+                            Voir les détails
+                        </button>
+                    `);
+
+                // Stocker la référence du marqueur
+                communeMarkers[commune] = marker;
+            }
+        }
+
+        // Fonction pour mettre à jour les marqueurs avec les vrais nombres
+        function updateMarkers() {
+            for (const [commune, data] of Object.entries(communeData)) {
+                if (communeMarkers[commune]) {
+                    const count = data.total;
+                    const newIcon = L.divIcon({
+                        html: createCustomMarker(count, commune).outerHTML,
+                        className: 'custom-marker-container',
+                        iconSize: [50, 50],
+                        iconAnchor: [25, 25]
+                    });
+
+                    // Mettre à jour l'icône du marqueur avec le vrai nombre
+                    communeMarkers[commune].setIcon(newIcon);
+
+                    // Mettre à jour le popup avec les vraies données
+                    const popupContent = `
+                        <h3>${commune}</h3>
+                        <p><strong>Description:</strong> ${communesBeni[commune]?.description || 'Non spécifié'}</p>
+                        <p><strong>Total perceptions:</strong> <strong style="color: var(--primary); font-size: 1.2em;">${count}</strong></p>
+                        <p><strong>Complétés:</strong> ${data.completed}</p>
+                        <p><strong>En attente:</strong> ${data.pending}</p>
+                        <p><strong>Erreurs:</strong> ${data.errors}</p>
+                        <p><strong>Montant total:</strong> ${calculateCommuneMontant(commune).toLocaleString()} FC</p>
+                        <button class="btn btn-primary btn-sm" onclick="showCommuneInfo('${commune}')">
+                            Voir les détails complets
+                        </button>
+                    `;
+                    
+                    if (communeMarkers[commune].isPopupOpen()) {
+                        communeMarkers[commune].setPopupContent(popupContent);
+                    } else {
+                        communeMarkers[commune].bindPopup(popupContent);
+                    }
+                }
+            }
+
+            // Mettre à jour également les marqueurs des communes qui n'ont pas de données
+            for (const [commune] of Object.entries(communesBeni)) {
+                if (!communeData[commune] && communeMarkers[commune]) {
+                    const count = 0;
+                    const newIcon = L.divIcon({
+                        html: createCustomMarker(count, commune).outerHTML,
+                        className: 'custom-marker-container',
+                        iconSize: [50, 50],
+                        iconAnchor: [25, 25]
+                    });
+                    communeMarkers[commune].setIcon(newIcon);
+                }
+            }
+        }
+
+        // Fonction pour calculer le montant total par commune
+        function calculateCommuneMontant(commune) {
+            let totalMontant = 0;
+            const parsedData = parseData(apiData);
+            
+            parsedData.forEach(item => {
+                if (item.entete.commune === commune) {
+                    const montant = parseFloat(item.service_taxateur.montant_chiffre) || 0;
+                    totalMontant += montant;
+                }
+            });
+            
+            return totalMontant;
+        }
+
+        // Fonction pour afficher les informations d'une commune
+        function showCommuneInfo(commune) {
+            const info = document.getElementById('commune-info');
+            const data = communeData[commune] || { total: 0, completed: 0, pending: 0, errors: 0 };
+
+            document.getElementById('commune-name').textContent = commune;
+            document.getElementById('commune-total').textContent = data.total;
+            document.getElementById('commune-completed').textContent = data.completed;
+            document.getElementById('commune-pending').textContent = data.pending;
+            document.getElementById('commune-errors').textContent = data.errors;
+
+            info.classList.add('active');
+
+            // Filtrer le tableau pour afficher seulement les données de cette commune
+            filterTableByCommune(commune);
+
+            // Centrer la carte sur la commune sélectionnée
+            if (communesBeni[commune]) {
+                map.setView([communesBeni[commune].lat, communesBeni[commune].lng], 14);
+            }
+        }
+
+        // Fonction pour filtrer le tableau par commune
+        function filterTableByCommune(commune) {
+            const filtered = apiData.filter(item => {
+                try {
+                    const entete = JSON.parse(item.entete);
+                    return entete.commune === commune;
+                } catch (error) {
+                    return false;
+                }
+            });
+            
+            renderTable(filtered);
+        }
 
         // Fonction pour récupérer les données de l'API
         async function fetchData() {
@@ -657,6 +1121,8 @@
                     filteredData = [...apiData];
                     renderTable(filteredData);
                     updateStats(filteredData);
+                    updateCommuneData(filteredData);
+                    updateMarkers(); // Mettre à jour les marqueurs avec les vrais nombres
                     hideLoading();
                 } else {
                     throw new Error("Format de données incorrect");
@@ -769,7 +1235,7 @@
             if (data.length === 0) {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td colspan="8" style="text-align: center; padding: 40px;">
+                    <td colspan="9" style="text-align: center; padding: 40px;">
                         <i class="fas fa-inbox" style="font-size: 3rem; color: var(--gray-light); margin-bottom: 10px;"></i>
                         <p>Aucune donnée à afficher</p>
                     </td>
@@ -787,9 +1253,9 @@
                 row.innerHTML = `
                     <td>${item.id}</td>
                     <td>${item.service_taxateur.nom_raison_sociel || 'N/A'}</td>
+                    <td>${item.entete.commune || 'N/A'}</td>
                     <td>${item.entete.service || 'N/A'}</td>
                     <td>${item.service_taxateur.acte_generateur_libelle || 'N/A'}</td>
-                    <td>${item.entete.numero || 'N/A'}</td>
                     <td>${formatDate(item.entete.date)}</td>
                     <td>${item.service_taxateur.montant_chiffre || '0'} FC</td>
                     <td><span class="badge ${status.class}">${status.text}</span></td>
@@ -921,21 +1387,63 @@
         function updateStats(data) {
             const parsedData = parseData(data);
             const total = parsedData.length;
-            const completed = parsedData.filter(item => 
-                item.service_comptable.montant_percu_en_chiffre && 
-                item.service_comptable.montant_percu_en_chiffre !== "").length;
-            const pending = parsedData.filter(item => 
-                !item.service_comptable.montant_percu_en_chiffre && 
-                item.service_ordonateur.montant_vise_en_chiffre && 
-                item.service_ordonateur.montant_vise_en_chiffre !== "").length;
-            const errors = parsedData.filter(item => 
-                !item.service_comptable.montant_percu_en_chiffre && 
-                !item.service_ordonateur.montant_vise_en_chiffre).length;
+            
+            // Calculer le montant total
+            let totalMontant = 0;
+            parsedData.forEach(item => {
+                const montant = parseFloat(item.service_taxateur.montant_chiffre) || 0;
+                totalMontant += montant;
+            });
+            
+            // Compter les communes
+            const communes = new Set();
+            parsedData.forEach(item => {
+                if (item.entete.commune) {
+                    communes.add(item.entete.commune);
+                }
+            });
+            
+            // Calculer la moyenne par commune
+            const avgPerCommune = communes.size > 0 ? Math.round(total / communes.size) : 0;
 
-            document.getElementById('total-records').textContent = total;
-            document.getElementById('completed').textContent = completed;
-            document.getElementById('pending').textContent = pending;
-            document.getElementById('errors').textContent = errors;
+            document.getElementById('total-communes').textContent = communes.size;
+            document.getElementById('total-perceptions').textContent = total;
+            document.getElementById('total-montant').textContent = totalMontant.toLocaleString();
+            document.getElementById('avg-perception').textContent = avgPerCommune;
+        }
+
+        // Fonction pour mettre à jour les données des communes
+        function updateCommuneData(data) {
+            const parsedData = parseData(data);
+            
+            // Réinitialiser les données des communes
+            communeData = {};
+            
+            // Compter les perceptions par commune
+            parsedData.forEach(item => {
+                const commune = item.entete.commune;
+                if (commune) {
+                    if (!communeData[commune]) {
+                        communeData[commune] = {
+                            total: 0,
+                            completed: 0,
+                            pending: 0,
+                            errors: 0
+                        };
+                    }
+                    
+                    communeData[commune].total++;
+                    
+                    const status = getStatus(item);
+                    if (status.class === "success") {
+                        communeData[commune].completed++;
+                    } else if (status.class === "warning") {
+                        communeData[commune].pending++;
+                    } else {
+                        communeData[commune].errors++;
+                    }
+                }
+            });
         }
 
         // Fonction de recherche
@@ -977,6 +1485,9 @@
 
         // Initialisation
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialiser la carte
+            initMap();
+            
             // Charger les données au démarrage
             fetchData();
             
@@ -996,7 +1507,12 @@
                 }
             });
 
-            // Rafraîchir les données toutes les 5 minutes
+            // Configurer les filtres de statut
+            document.querySelectorAll('.filter-option input').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    fetchData();
+                });
+            });
             setInterval(fetchData, 5 * 60 * 1000);
         });
     </script>
